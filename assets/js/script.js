@@ -7,8 +7,12 @@ var currentIndex = 0;
 var repeat = false;
 var shuffle = false;
 var userLoggedIn;
+var timer;
 
 function openPage(url){
+	if(timer!=null){
+		clearTimeout(timer);
+	}
 	if (url.indexOf("?")==-1){
 		url = url + "?";
 	}
@@ -16,6 +20,41 @@ function openPage(url){
 	$("#mainContent").load(encodedUrl);
 	$("body").scrollTop(0);
 	history.pushState(null,null,url);
+}
+
+function createPlaylist(){
+	console.log(userLoggedIn);
+	var popup = prompt("Please enter the name of your playlist");
+	if(popup!=null){
+
+		$.post("includes/handlers/ajax/createPlaylist.php",{name: popup, username: userLoggedIn})
+		.done(function(error){
+			if (error!=""){
+				alert(error);
+				return;
+			}
+			// do something when ajax returns
+			openPage("yourMusic.php");
+		});
+
+
+	}
+}
+
+function deletePlaylist(playlistId){
+	var prompt = confirm("are you sure you want to delete this playlist?");
+	if (prompt==true){
+		$.post("includes/handlers/ajax/deletePlaylist.php",{playlistId:playlistId})
+		.done(function(error){
+
+			if (error!=""){
+				alert(error);
+				return;
+			}
+			// do something when ajax returns
+			openPage("yourMusic.php");
+		});
+	}
 }
 
 function formatTime(seconds){
@@ -42,6 +81,10 @@ function updateTimeProgressBar(audio){
 function updateVolumProgressBar(audio){
 	var volume = audio.volume * 100;
 	$(".volumeBar .progress").css("width",volume + "%");
+}
+
+function playFirstSong(){
+	setTrack(tempPlayList[0],tempPlayList,true);
 }
 
 function Audio(){
